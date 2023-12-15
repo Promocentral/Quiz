@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "247092746828",
+    "project_id": "quizapplication-e3855",
+    "storage_bucket": "quizapplication-e3855.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:247092746828:android:bf6799f3e96c7a9c3db2e9",
+        "android_client_info": {
+          "package_name": "com.example.quizapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD42H_Y1G0VjIYaC7_AjvFn8_4-8Jn-lg8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
