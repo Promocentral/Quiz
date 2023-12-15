@@ -4,29 +4,52 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Bottom
+import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.Visibility
+import androidx.core.graphics.drawable.IconCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.quizapplication.ui.theme.QuizApplicationTheme
@@ -52,68 +75,170 @@ class SignUpPage : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUp(navController: NavController){
-    var email by remember{ mutableStateOf("") }
-    var password by remember{ mutableStateOf("") }
+fun SignUp(navController: NavController) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    var receiveEmails by remember { mutableStateOf(false) }
 
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
-    ){
-        Spacer(modifier = Modifier.height(200.dp))
-
-        Text(text = "Sign Up",
-            color = Color.Black,
-            style = MaterialTheme.typography.headlineMedium,
+//            .fillMaxSize()
+            .background(color = Color.White)
+    ) {
+        Column(
             modifier = Modifier
-                .align(CenterHorizontally)
-        )
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it
-                errorMessage = ""},
-            label = { Text("Email", color = Color.Black) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it
-                errorMessage = ""},
-            label = { Text("Password", color = Color.Black) },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
-        )
-
-        Text(text = errorMessage,
-            color = Color.Red,
-            style = MaterialTheme.typography.bodyLarge
-            )
-        
-        Button(onClick = {
-            if(validLogin(email, password)){
-                signUpWithFirebase(email, password, navController)
-            } else {
-                errorMessage = "Invalid Details, Try Again"
-            }
-        },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
+                .fillMaxSize()
+                .padding(bottom = 56.dp)
         ) {
-            Text(text = "Sign Up")
+            Spacer(modifier = Modifier.height(200.dp))
+
+            Text(
+                text = "Hello there,",
+                color = Color.Black,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.align(CenterHorizontally)
+            )
+
+            Text(
+                text = "Create An Account!",
+                color = Color.Black,
+                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.align(CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    errorMessage = ""
+                },
+                label = { Text("Email", color = Color.Black) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        tint = Color.Gray
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .padding(start = 16.dp, end = 16.dp)
+            )
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    errorMessage = ""
+                },
+                label = { Text("Password", color = Color.Black) },
+                visualTransformation = PasswordVisualTransformation(),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = Color.Gray
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .padding(start = 16.dp, end = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = receiveEmails,
+                    onCheckedChange = { checked ->
+                        receiveEmails = checked
+                    },
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .padding(start = 16.dp, end = 16.dp)
+                )
+
+                Text(
+                    text = "I want to receive emails",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black
+                )
+            }
+
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.align(CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = {
+                    if (validLogin(email, password)) {
+                        signUpWithFirebase(email, password, navController)
+                    } else {
+                        errorMessage = "Invalid Details, Try Again"
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(start = 16.dp, end = 16.dp)
+                    .align(CenterHorizontally)
+            ) {
+                Text(text = "Sign Up")
+            }
         }
 
+        BottomAppBar(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .background(color = Color.LightGray)
+        ) {
+            IconButton(
+                onClick = {
+                    navController.navigate("LoginPage")
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Login",
+                    modifier = Modifier.size(150.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(
+                onClick = {
+                    navController.navigate("SignUpPage")
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountBox,
+                    contentDescription = "Create An Account",
+                    modifier = Modifier.size(150.dp)
+                )
+            }
+        }
     }
 }
+
+
 
 fun validEmail(email: String): Boolean{
     return email.isNotEmpty() && email.length > 8
