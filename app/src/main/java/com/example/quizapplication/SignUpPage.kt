@@ -232,6 +232,8 @@ fun SignUp(navController: NavController) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .background(color = Color.LightGray)
+                    .height(70.dp),
+                containerColor = Color.LightGray,
 //                .padding(top = 10.dp)
             ) {
                 IconButton(
