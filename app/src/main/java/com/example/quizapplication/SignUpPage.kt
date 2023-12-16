@@ -3,6 +3,11 @@ package com.example.quizapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.ArrowBack
@@ -45,6 +51,9 @@ import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -80,164 +89,194 @@ fun SignUp(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var receiveEmails by remember { mutableStateOf(false) }
+    var isVisible by remember { mutableStateOf(true) }
 
-    Box(
-        modifier = Modifier
-//            .fillMaxSize()
-            .background(color = Color.White)
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = expandIn(),
+        exit = shrinkOut()
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 56.dp)
+//            .fillMaxSize()
+                .background(color = Color.White)
         ) {
-            Spacer(modifier = Modifier.height(200.dp))
-
-            Text(
-                text = "Hello there,",
-                color = Color.Black,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.align(CenterHorizontally)
-            )
-
-            Text(
-                text = "Create An Account!",
-                color = Color.Black,
-                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.align(CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    errorMessage = ""
-                },
-                label = { Text("Email", color = Color.Black) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = null,
-                        tint = Color.Gray
-                    )
-                },
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-                    .padding(start = 16.dp, end = 16.dp)
-            )
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    errorMessage = ""
-                },
-                label = { Text("Password", color = Color.Black) },
-                visualTransformation = PasswordVisualTransformation(),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = Color.Gray
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-                    .padding(start = 16.dp, end = 16.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(bottom = 100.dp)
             ) {
-                Checkbox(
-                    checked = receiveEmails,
-                    onCheckedChange = { checked ->
-                        receiveEmails = checked
-                    },
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .padding(start = 16.dp, end = 16.dp)
+                Spacer(modifier = Modifier.height(200.dp))
+
+                Text(
+                    text = "Hello there,",
+                    color = Color.Black,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.align(CenterHorizontally)
                 )
 
                 Text(
-                    text = "I want to receive emails",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Black
+                    text = "Create An Account!",
+                    color = Color.Black,
+                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.align(CenterHorizontally)
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        errorMessage = ""
+                    },
+                    label = { Text("Email", color = Color.Black) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .padding(start = 16.dp, end = 16.dp)
+                )
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        errorMessage = ""
+                    },
+                    label = { Text("Password", color = Color.Black) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                        .padding(start = 16.dp, end = 16.dp)
+                )
+
+//            ClickableText(
+//                text = AnnotatedString("Select Profile Picture"),
+//                onClick = {
+//                    openImagePicker()
+//                },
+//                style = TextStyle(color = Color.Blue),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(start = 130.dp, end = 16.dp)
+//                    .align(CenterHorizontally)
+////                    .padding(bottom = 16.dp)
+//            )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = receiveEmails,
+                        onCheckedChange = { checked ->
+                            receiveEmails = checked
+                        },
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .padding(start = 16.dp, end = 16.dp)
+                    )
+
+                    Text(
+                        text = "I want to receive emails",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Black
+                    )
+                }
+
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.align(CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Button(
+                    onClick = {
+                        if (validSignUp(email, password)) {
+                            signUpWithFirebase(email, password, navController)
+                        } else {
+                            errorMessage = "Invalid Details, Try Again"
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(start = 16.dp, end = 16.dp)
+                        .align(CenterHorizontally)
+                ) {
+                    Text(text = "Sign Up")
+                }
             }
 
-            Text(
-                text = errorMessage,
-                color = Color.Red,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.align(CenterHorizontally)
-            )
+            var selectedIcon by remember { mutableStateOf(Icons.Default.AccountBox) }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Button(
-                onClick = {
-                    if (validLogin(email, password)) {
-                        signUpWithFirebase(email, password, navController)
-                    } else {
-                        errorMessage = "Invalid Details, Try Again"
-                    }
-                },
+            BottomAppBar(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .padding(start = 16.dp, end = 16.dp)
-                    .align(CenterHorizontally)
+                    .align(Alignment.BottomCenter)
+                    .background(color = Color.LightGray)
+//                .padding(top = 10.dp)
             ) {
-                Text(text = "Sign Up")
-            }
-        }
+                IconButton(
+                    onClick = {
+                        navController.navigate("LoginPage")
+                        selectedIcon = Icons.Default.Person
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .align(Alignment.Top)
+                        .background(if (selectedIcon == Icons.Default.Person) Color.LightGray else Color.Transparent)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Login",
+                        modifier = Modifier.size(150.dp)
+                    )
+                }
 
-        BottomAppBar(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .background(color = Color.LightGray)
-        ) {
-            IconButton(
-                onClick = {
-                    navController.navigate("LoginPage")
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Login",
-                    modifier = Modifier.size(150.dp)
-                )
-            }
+                Spacer(modifier = Modifier.width(8.dp))
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            IconButton(
-                onClick = {
-                    navController.navigate("SignUpPage")
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AccountBox,
-                    contentDescription = "Create An Account",
-                    modifier = Modifier.size(150.dp)
-                )
+                IconButton(
+                    onClick = {
+                        navController.navigate("SignUpPage")
+                        selectedIcon = Icons.Default.AccountBox
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(150.dp)
+                        .fillMaxWidth()
+//                    .align(Alignment.Top)
+                        .background(if (selectedIcon == Icons.Default.AccountBox) Color.LightGray else Color.Transparent)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountBox,
+                        contentDescription = "Create An Account",
+                        modifier = Modifier.size(150.dp)
+                    )
+                }
             }
         }
     }
 }
-
 
 
 fun validEmail(email: String): Boolean{
@@ -248,7 +287,7 @@ fun validPassword(password: String): Boolean{
     return password.isNotEmpty() && password.length > 5
 }
 
-fun validLogin(email: String, password: String): Boolean{
+fun validSignUp(email: String, password: String): Boolean{
     return validEmail(email) && validPassword(password)
 }
 
