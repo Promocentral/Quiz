@@ -1,9 +1,14 @@
 package com.example.quizapplication
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
@@ -46,14 +52,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.quizapplication.ui.theme.QuizApplicationTheme
-
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 class HomePage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +88,11 @@ class HomePage : ComponentActivity() {
 @Composable
 fun Home(navController: NavController) {
     var isDrawerOpen by remember { mutableStateOf(false) }
+    var profilePicture by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+        profilePicture = uri
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -91,19 +109,33 @@ fun Home(navController: NavController) {
         TopAppBar(
             title = { Text(text = "") },
             navigationIcon = {
+                val firebaseUser = FirebaseAuth.getInstance().currentUser
                 Row {
-                    IconButton(
-                        onClick = {
-
+                    if (firebaseUser != null) {
+                        val profilePictureUrl = firebaseUser.photoUrl?.toString()
+                        if (profilePictureUrl != null) {
+                            Image(
+                                painter = rememberImagePainter(data = profilePictureUrl),
+                                contentDescription = "Profile Picture",
+                                modifier = Modifier.size(50.dp)
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = "AccountCircle",
+                                modifier = Modifier.size(50.dp)
+                            )
                         }
-                    ) {
+                    } else {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "AccountCircle",
-                            modifier = Modifier.size(70.dp)
+                            modifier = Modifier.size(50.dp)
                         )
                     }
+
                     Spacer(modifier = Modifier.weight(1f))
+
                     IconButton(
                         onClick = {
                             navController.navigate("LoginPage")
@@ -113,7 +145,6 @@ fun Home(navController: NavController) {
                             imageVector = Icons.Default.ExitToApp,
                             contentDescription = "Settings",
                             modifier = Modifier.size(70.dp)
-//                                .padding(end = 10.dp)
                         )
                     }
                 }
@@ -121,14 +152,38 @@ fun Home(navController: NavController) {
             colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.LightGray)
         )
 
-        var selectedIcon by remember { mutableStateOf(Icons.Default.Home) }
+        Column{
+//            if (profilePicture != null) {
+//                Image(
+//                    painter = rememberAsyncImagePainter(profilePicture),
+//                    contentDescription = "Profile Picture",
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .size(70.dp)
+//                        .clip(CircleShape)
+//                        .clickable { launcher.launch("image/*") }
+//                )
+//            } else {
+//                Image(
+//                    painter = painterResource(R.drawable.ic_launcher_background),
+//                    contentDescription = "Profile Picture",
+//                    modifier = Modifier
+//                        .size(70.dp)
+//                        .clip(CircleShape)
+//                        .clickable { launcher.launch("image/*") }
+//                )
+//            }
+
+        }
+
+//        var selectedIcon by remember { mutableStateOf(Icons.Default.Home) }
 
         BottomAppBar(
 //            colors = BottomAppBarDefaults.(containerColor = Color.LightGray),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .background(color = Color.LightGray)
-                .height(70.dp),
+                .height(50.dp),
             containerColor = Color.LightGray,
         ) {
             Row(
@@ -138,7 +193,7 @@ fun Home(navController: NavController) {
                 IconButton(
                     onClick = {
                         navController.navigate("HomePage")
-                        selectedIcon = Icons.Default.Home
+//                        selectedIcon = Icons.Default.Home
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -146,7 +201,7 @@ fun Home(navController: NavController) {
 //                        .height(70.dp)
                         .fillMaxHeight()
                         .fillMaxWidth()
-                        .background(if (selectedIcon == Icons.Default.Home) Color.Gray else Color.Transparent)
+//                        .background(if (selectedIcon == Icons.Default.Home) Color.Gray else Color.Transparent)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Home,
@@ -160,7 +215,7 @@ fun Home(navController: NavController) {
                 IconButton(
                     onClick = {
                         navController.navigate("SearchPage")
-                        selectedIcon = Icons.Default.Search
+//                        selectedIcon = Icons.Default.Search
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -181,7 +236,7 @@ fun Home(navController: NavController) {
                 IconButton(
                     onClick = {
                         navController.navigate("AccountStatsPage")
-                        selectedIcon = Icons.Default.Settings
+//                        selectedIcon = Icons.Default.Settings
                     },
                     modifier = Modifier
                         .weight(1f)

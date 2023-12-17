@@ -1,17 +1,20 @@
 package com.example.quizapplication
 
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Spacer
@@ -21,14 +24,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
@@ -40,30 +41,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment.Companion.Bottom
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.Visibility
-import androidx.core.graphics.drawable.IconCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.quizapplication.ui.theme.QuizApplicationTheme
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 
 class SignUpPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,6 +91,11 @@ fun SignUp(navController: NavController) {
     var errorMessage by remember { mutableStateOf("") }
     var receiveEmails by remember { mutableStateOf(false) }
     var isVisible by remember { mutableStateOf(true) }
+    var profilePicture by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+        profilePicture = uri
+    }
 
     AnimatedVisibility(
         visible = isVisible,
@@ -98,7 +104,6 @@ fun SignUp(navController: NavController) {
     ) {
         Box(
             modifier = Modifier
-//            .fillMaxSize()
                 .background(color = Color.White)
         ) {
             Column(
@@ -106,7 +111,7 @@ fun SignUp(navController: NavController) {
                     .fillMaxSize()
                     .padding(bottom = 100.dp)
             ) {
-                Spacer(modifier = Modifier.height(200.dp))
+                Spacer(modifier = Modifier.height(150.dp))
 
                 Text(
                     text = "Hello there,",
@@ -123,6 +128,29 @@ fun SignUp(navController: NavController) {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                if (profilePicture != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(profilePicture),
+                        contentDescription = "Profile Picture",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .clip(CircleShape)
+                            .clickable { launcher.launch("image/*") }
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(70.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .clip(CircleShape)
+                            .clickable { launcher.launch("image/*") }
+                    )
+                }
 
                 OutlinedTextField(
                     value = email,
@@ -165,19 +193,6 @@ fun SignUp(navController: NavController) {
                         .padding(start = 16.dp, end = 16.dp)
                 )
 
-//            ClickableText(
-//                text = AnnotatedString("Select Profile Picture"),
-//                onClick = {
-//                    openImagePicker()
-//                },
-//                style = TextStyle(color = Color.Blue),
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(start = 130.dp, end = 16.dp)
-//                    .align(CenterHorizontally)
-////                    .padding(bottom = 16.dp)
-//            )
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -211,7 +226,7 @@ fun SignUp(navController: NavController) {
                 Button(
                     onClick = {
                         if (validSignUp(email, password)) {
-                            signUpWithFirebase(email, password, navController)
+                            signUpWithFirebase(email, password, navController, profilePicture)
                         } else {
                             errorMessage = "Invalid Details, Try Again"
                         }
@@ -227,14 +242,12 @@ fun SignUp(navController: NavController) {
             }
 
             var selectedIcon by remember { mutableStateOf(Icons.Default.AccountBox) }
-
             BottomAppBar(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                    .align(BottomCenter)
                     .background(color = Color.LightGray)
-                    .height(70.dp),
+                    .height(50.dp),
                 containerColor = Color.LightGray,
-//                .padding(top = 10.dp)
             ) {
                 IconButton(
                     onClick = {
@@ -266,7 +279,6 @@ fun SignUp(navController: NavController) {
                         .weight(1f)
                         .height(150.dp)
                         .fillMaxWidth()
-//                    .align(Alignment.Top)
                         .background(if (selectedIcon == Icons.Default.AccountBox) Color.LightGray else Color.Transparent)
                 ) {
                     Icon(
@@ -293,14 +305,89 @@ fun validSignUp(email: String, password: String): Boolean{
     return validEmail(email) && validPassword(password)
 }
 
-fun signUpWithFirebase(email: String, password: String, navController: NavController){
-    val firebase = FirebaseAuth.getInstance()
-    firebase.createUserWithEmailAndPassword(email, password)
+fun signUpWithFirebase(email: String, password: String, navController: NavController, profilePicture: Uri?) {
+    val firebaseAuth = FirebaseAuth.getInstance()
+
+    firebaseAuth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
-            if(task.isSuccessful){
-                navController.navigate("LoginPage")
+            if (task.isSuccessful) {
+                val user = firebaseAuth.currentUser
+                if (user != null) {
+                    val profileUpdates = UserProfileChangeRequest.Builder()
+                        .setDisplayName(email)
+                        .setPhotoUri(profilePicture)
+                        .build()
+
+                    user.updateProfile(profileUpdates)
+                        .addOnCompleteListener { updateTask ->
+                            if (updateTask.isSuccessful) {
+                                uploadProfilePicture(user.uid, profilePicture) { profilePictureUrl ->
+                                    savingUserData(email, password, profilePictureUrl)
+                                    navController.navigate("LoginPage")
+                                }
+                            } else {
+                                Log.e("UpdateProfile", "Error updating profile: ${updateTask.exception}")
+                                navController.navigate("SignUpPage")
+                            }
+                        }
+                } else {
+                    Log.e("SignUpWithFirebase", "User is null after account creation.")
+                }
             } else {
+                Log.e("SignUpWithFirebase", "Error creating account: ${task.exception}")
                 navController.navigate("SignUpPage")
             }
         }
 }
+
+
+fun uploadProfilePicture(userId: String, profilePicture: Uri?, onComplete: (String?) -> Unit) {
+    if (profilePicture == null) {
+        onComplete(null)
+        return
+    }
+
+    val storage = FirebaseStorage.getInstance()
+    val storageRef = storage.reference
+    val imageName = "profile_pictures/${userId}/${UUID.randomUUID()}"
+    val imageRef = storageRef.child(imageName)
+
+    val uploadTask = imageRef.putFile(profilePicture)
+
+    uploadTask.continueWithTask { task ->
+        if (!task.isSuccessful) {
+            task.exception?.let {
+                throw it
+            }
+        }
+        imageRef.downloadUrl
+    }.addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            val downloadUri = task.result
+            Log.d("UploadProfilePicture", "Download URL: $downloadUri")
+            onComplete(downloadUri.toString())
+        } else {
+            // Handle the error here
+            Log.e("UploadProfilePicture", "Error uploading profile picture: ${task.exception}")
+            onComplete(null)
+        }
+    }
+}
+
+fun savingUserData(email: String, password: String, profilePictureUrl: String?) {
+    val firestore = FirebaseFirestore.getInstance()
+    data class InfoForUser(
+        val email: String,
+        val password: String,
+        val profilePictureUrl: String? = null
+    )
+
+    val userInfo = InfoForUser(
+        email = email,
+        password = password,
+        profilePictureUrl = profilePictureUrl
+    )
+
+    firestore.collection("users").add(userInfo)
+}
+
