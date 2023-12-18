@@ -96,6 +96,7 @@ fun SignUp(navController: NavController) {
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         profilePicture = uri
     }
+    val lightPurple = Color(0xFFB19CD9)
 
     AnimatedVisibility(
         visible = isVisible,
@@ -104,7 +105,8 @@ fun SignUp(navController: NavController) {
     ) {
         Box(
             modifier = Modifier
-                .background(color = Color.White)
+//                .background(color = Color.White)
+                .background(color = Color(0xF5F5F5))
         ) {
             Column(
                 modifier = Modifier
@@ -247,7 +249,7 @@ fun SignUp(navController: NavController) {
                     .align(BottomCenter)
                     .background(color = Color.LightGray)
                     .height(50.dp),
-                containerColor = Color.LightGray,
+                containerColor = lightPurple,
             ) {
                 IconButton(
                     onClick = {
@@ -259,7 +261,7 @@ fun SignUp(navController: NavController) {
                         .fillMaxWidth()
                         .height(150.dp)
                         .align(Alignment.Top)
-                        .background(if (selectedIcon == Icons.Default.Person) Color.LightGray else Color.Transparent)
+//                        .background(if (selectedIcon == Icons.Default.Person) Color.LightGray else Color.Transparent)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -279,7 +281,7 @@ fun SignUp(navController: NavController) {
                         .weight(1f)
                         .height(150.dp)
                         .fillMaxWidth()
-                        .background(if (selectedIcon == Icons.Default.AccountBox) Color.LightGray else Color.Transparent)
+//                        .background(if (selectedIcon == Icons.Default.AccountBox) Color.LightGray else Color.Transparent)
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountBox,
@@ -367,7 +369,6 @@ fun uploadProfilePicture(userId: String, profilePicture: Uri?, onComplete: (Stri
             Log.d("UploadProfilePicture", "Download URL: $downloadUri")
             onComplete(downloadUri.toString())
         } else {
-            // Handle the error here
             Log.e("UploadProfilePicture", "Error uploading profile picture: ${task.exception}")
             onComplete(null)
         }

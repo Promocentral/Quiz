@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = "LoginPage"
+                    startDestination = "AccountDetailsPage"
                 ) {
                     composable("LoginPage") {
                         Login(navController)
@@ -73,11 +73,14 @@ class MainActivity : ComponentActivity() {
                     composable("HomePage"){
                         Home(navController)
                     }
-                    composable("SearchPage"){
+                    composable("NotificationsPage"){
 //                        Home(navController)
                     }
-                    composable("AccountStatsPage"){
+                    composable("SettingsPage"){
 //                        Home(navController)
+                    }
+                    composable("AccountDetailsPage"){
+                        AccountDetails(navController)
                     }
                 }
             }
@@ -92,11 +95,12 @@ fun Login(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
+    val lightPurple = Color(0xFFB19CD9)
 
     Box(
         modifier = Modifier
 //            .fillMaxSize()
-            .background(color = Color.White)
+            .background(color = Color(0xF5F5F5))
     ) {
         Column(
             modifier = Modifier
@@ -195,9 +199,9 @@ fun Login(navController: NavController) {
         BottomAppBar(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .background(color = Color.LightGray)
+                .background(color = lightPurple)
                 .height(50.dp),
-            containerColor = Color.LightGray,
+            containerColor = lightPurple,
 //                .padding(top = 10.dp)
         ) {
             IconButton(
@@ -210,7 +214,7 @@ fun Login(navController: NavController) {
                     .fillMaxWidth()
                     .height(150.dp)
                     .align(Alignment.Top)
-                    .background(if (selectedIcon == Icons.Default.Person) Color.LightGray else Color.Transparent)
+//                    .background(if (selectedIcon == Icons.Default.Person) Color.LightGray else Color.Transparent)
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
@@ -231,7 +235,7 @@ fun Login(navController: NavController) {
                     .height(150.dp)
                     .fillMaxWidth()
 //                    .align(Alignment.Top)
-                    .background(if (selectedIcon == Icons.Default.AccountBox) Color.LightGray else Color.Transparent)
+//                    .background(if (selectedIcon == Icons.Default.AccountBox) Color.LightGray else Color.Transparent)
             ) {
                 Icon(
                     imageVector = Icons.Default.AccountBox,

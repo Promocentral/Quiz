@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,17 +30,21 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -93,10 +98,12 @@ fun Home(navController: NavController) {
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         profilePicture = uri
     }
+    val lightPurple = Color(0xFFB19CD9)
+    var showDialog by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.White)
+            .background(color = Color(0xF5F5F5))
     ) {
         Column(
             modifier = Modifier
@@ -110,14 +117,23 @@ fun Home(navController: NavController) {
             title = { Text(text = "") },
             navigationIcon = {
                 val firebaseUser = FirebaseAuth.getInstance().currentUser
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     if (firebaseUser != null) {
                         val profilePictureUrl = firebaseUser.photoUrl?.toString()
                         if (profilePictureUrl != null) {
                             Image(
                                 painter = rememberImagePainter(data = profilePictureUrl),
                                 contentDescription = "Profile Picture",
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier.size(50.dp)
+                                    .clip(CircleShape)
+                                    .aspectRatio(1f)
+                                    .clickable {
+                                        navController.navigate("AccountDetailsPage")
+                                    }
+
                             )
                         } else {
                             Icon(
@@ -136,20 +152,54 @@ fun Home(navController: NavController) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
+
                     IconButton(
                         onClick = {
-                            navController.navigate("LoginPage")
+                            showDialog = true
                         }
                     ) {
                         Icon(
                             imageVector = Icons.Default.ExitToApp,
                             contentDescription = "Settings",
-                            modifier = Modifier.size(70.dp)
+                            modifier = Modifier.size(50.dp) // Adjusted size
+                        )
+                    }
+
+
+        if (showDialog) {
+                        AlertDialog(
+                            containerColor = lightPurple,
+                            onDismissRequest = {
+                                showDialog = false
+                            },
+                            title = { Text("Logout", style = MaterialTheme.typography.headlineMedium) },
+                            text = { Text("Are you sure you want to log out?", style = MaterialTheme.typography.bodyLarge) },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog = false
+                                        navController.navigate("LoginPage")
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                                ) {
+                                    Text("Confirm", color = Color.White)
+                                }
+                            },
+                            dismissButton = {
+                                Button(
+                                    onClick = {
+                                        showDialog = false
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                ) {
+                                    Text("Cancel", color = Color.White)
+                                }
+                            }
                         )
                     }
                 }
             },
-            colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.LightGray)
+            colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = lightPurple)
         )
 
         Column{
@@ -184,7 +234,7 @@ fun Home(navController: NavController) {
                 .align(Alignment.BottomCenter)
                 .background(color = Color.LightGray)
                 .height(50.dp),
-            containerColor = Color.LightGray,
+            containerColor = lightPurple,
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -225,7 +275,7 @@ fun Home(navController: NavController) {
 //                        .background(if (selectedIcon == Icons.Default.Search) Color.LightGray else Color.Transparent)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = Icons.Default.Notifications,
                         contentDescription = "Searching Quizzes",
                         modifier = Modifier.size(70.dp)
                     )
