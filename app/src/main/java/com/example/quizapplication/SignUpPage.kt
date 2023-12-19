@@ -1,5 +1,6 @@
 package com.example.quizapplication
 
+import android.content.ContentValues.TAG
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -60,6 +61,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.quizapplication.ui.theme.QuizApplicationTheme
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -87,6 +89,7 @@ class SignUpPage : ComponentActivity() {
 @Composable
 fun SignUp(navController: NavController) {
     var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
     var receiveEmails by remember { mutableStateOf(false) }
@@ -296,7 +299,8 @@ fun SignUp(navController: NavController) {
 
 
 fun validEmail(email: String): Boolean{
-    return email.isNotEmpty() && email.length > 8
+    val emailRegex = Regex("[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+    return email.isNotEmpty() && email.matches(emailRegex)
 }
 
 fun validPassword(password: String): Boolean{
@@ -309,6 +313,17 @@ fun validSignUp(email: String, password: String): Boolean{
 
 fun signUpWithFirebase(email: String, password: String, navController: NavController, profilePicture: Uri?) {
     val firebaseAuth = FirebaseAuth.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
+
+    data class User(
+        val email: String,
+        val password: String,
+        val profilePictureUrl: String?,
+        val phone: String,
+        val username: String,
+        val timestamp: Timestamp
+
+    )
 
     firebaseAuth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
@@ -324,8 +339,23 @@ fun signUpWithFirebase(email: String, password: String, navController: NavContro
                         .addOnCompleteListener { updateTask ->
                             if (updateTask.isSuccessful) {
                                 uploadProfilePicture(user.uid, profilePicture) { profilePictureUrl ->
-                                    savingUserData(email, password, profilePictureUrl)
-                                    navController.navigate("LoginPage")
+                                    val userData = User(
+                                        email = email,
+                                        password = password,
+                                        profilePictureUrl = profilePictureUrl,
+                                        phone = "",
+                                        username = "",
+                                        timestamp = Timestamp.now(),
+                                    )
+                                    firestore.collection("users").document(user.uid)
+                                        .set(userData)
+                                        .addOnSuccessListener {
+                                            Log.d(TAG, "DocumentSnapshot successfully written!")
+                                            navController.navigate("LoginPage")
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.w(TAG, "Error writing document", e)
+                                        }
                                 }
                             } else {
                                 Log.e("UpdateProfile", "Error updating profile: ${updateTask.exception}")
@@ -341,6 +371,8 @@ fun signUpWithFirebase(email: String, password: String, navController: NavContro
             }
         }
 }
+
+
 
 
 fun uploadProfilePicture(userId: String, profilePicture: Uri?, onComplete: (String?) -> Unit) {

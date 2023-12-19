@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = "AccountDetailsPage"
+                    startDestination = "SignUpPage"
                 ) {
                     composable("LoginPage") {
                         Login(navController)
@@ -248,7 +248,8 @@ fun Login(navController: NavController) {
 }
 
         fun validLoginEmail(email: String): Boolean {
-            return email.isNotEmpty() && email.length > 8
+            val emailRegex = Regex("[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+            return email.isNotEmpty() && email.matches(emailRegex)
         }
 
         fun validLoginPassword(password: String): Boolean {
