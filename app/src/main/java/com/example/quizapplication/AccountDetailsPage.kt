@@ -1,5 +1,6 @@
 package com.example.quizapplication
 
+import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
 import android.net.Uri
 import android.os.Bundle
@@ -25,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -53,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -66,6 +69,10 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 
 class AccountDetailsPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,6 +95,9 @@ class AccountDetailsPage : ComponentActivity() {
 @Composable
 fun AccountDetails(navController: NavController) {
     var password by remember { mutableStateOf( "") }
+    var dateOfBirth by remember { mutableStateOf<Date?>(null) }
+    var dateOfBirthString by remember { mutableStateOf("") }
+
 //    var emailAuth by remember { mutableStateOf( "") }
     val firebaseUser = FirebaseAuth.getInstance().currentUser
     var email by remember { mutableStateOf(firebaseUser?.email ?: "") }
@@ -178,11 +188,16 @@ fun AccountDetails(navController: NavController) {
                         confirmButton = {
                             Button(
                                 onClick = {
-                                    showDialogForSave = false
-                                    updateUsername(username, navController)
-                                    updatePhoneNumber(phone, navController)
-                                    updatePassword(password, navController)
-//                                    updateEmail(email, navController)
+                                    if (password.isEmpty()) {
+                                        errorMessage = "Password cannot be empty"
+                                    } else {
+                                        showDialogForSave = false
+                                        updateUsername(username, navController)
+                                        updatePhoneNumber(phone, navController)
+                                        updatePassword(password, navController)
+                                        updateDateOfBirth(dateOfBirthString, navController)
+                                        // updateEmail(email, navController)
+                                    }
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
                             ) {
@@ -192,9 +207,7 @@ fun AccountDetails(navController: NavController) {
                         dismissButton = {
                             Button(
                                 onClick = {
-                                    if (errorMessage.isEmpty()) {
-                                        showDialogForSave = false
-                                    }
+                                    showDialogForSave = false
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                             ) {
@@ -310,8 +323,7 @@ fun AccountDetails(navController: NavController) {
                                     phone = document.getString("phone") ?: ""
                                     username = document.getString("username") ?: ""
                                     password = document.getString("password") ?: ""
-//                                    email = document.getString("email") ?: ""
-                                }
+                                    dateOfBirthString = document.getString("dateOfBirth") ?: ""                                }
                             }
                             .addOnFailureListener { e ->
                                 Log.w(TAG, "Error fetching document", e)
@@ -362,7 +374,8 @@ fun AccountDetails(navController: NavController) {
                         unfocusedLabelColor = if (email.isEmpty()) Color.Red else Color.Gray
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = false
+//                    enabled = false
+                    readOnly = true
                 )
 
                 OutlinedTextField(
@@ -384,8 +397,39 @@ fun AccountDetails(navController: NavController) {
                         focusedLabelColor = Color.Blue,
                         unfocusedLabelColor = if (phone.isEmpty()) Color.Red else Color.Gray
                     ),
-//                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
+                )
+
+                val context = LocalContext.current
+                OutlinedTextField(
+                    value = dateOfBirthString,
+                    onValueChange = {},
+                    label = { Text("Date Of Birth") },
+                    leadingIcon = {
+                        IconButton(onClick = {
+                            val calendar = Calendar.getInstance().apply { set(Calendar.YEAR, 2002) }
+                            DatePickerDialog(context, { _, year, month, dayOfMonth ->
+                                calendar.set(year, month, dayOfMonth)
+                                dateOfBirth = calendar.time
+                                dateOfBirthString = SimpleDateFormat("dd/MM/yyyy").format(dateOfBirth)
+                            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                        }
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.Blue,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.Blue,
+                        unfocusedLabelColor = if (dateOfBirthString.isEmpty()) Color.Red else Color.Gray
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true
                 )
 
                 OutlinedTextField(
@@ -479,12 +523,12 @@ fun updateUsername(username: String, navController: NavController) {
     if (firebaseUser != null) {
         data class UserInfo(
             val username: String,
-            val timestamp: Timestamp
+//            val timestamp: Timestamp
         )
 
         val userData = UserInfo(
             username = username,
-            timestamp = Timestamp.now()
+//            timestamp = Timestamp.now()
         )
 
         firestore.collection("users").document(firebaseUser.uid)
@@ -507,12 +551,12 @@ fun updatePhoneNumber(phone: String, navController: NavController) {
     if (firebaseUser != null) {
         data class UserInfo(
             val phone: String,
-            val timestamp: Timestamp
+//            val timestamp: Timestamp
         )
 
         val userData = UserInfo(
             phone = phone,
-            timestamp = Timestamp.now()
+//            timestamp = Timestamp.now()
         )
 
         firestore.collection("users").document(firebaseUser.uid)
@@ -555,6 +599,33 @@ fun updatePassword(password: String, navController: NavController) {
                             Log.w(TAG, "Error updating password in Firebase Authentication", task.exception)
                         }
                     }
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error updating document", e)
+            }
+    } else {
+        Log.e(TAG, "User is not signed in.")
+    }
+}
+
+fun updateDateOfBirth(dateOfBirth: String, navController: NavController) {
+    val firestore = FirebaseFirestore.getInstance()
+    val firebaseUser = FirebaseAuth.getInstance().currentUser
+
+    if (firebaseUser != null) {
+        data class UserInfo(
+            val dateOfBirth: String,
+        )
+
+        val userData = UserInfo(
+            dateOfBirth = dateOfBirth
+        )
+
+        firestore.collection("users").document(firebaseUser.uid)
+            .set(userData, SetOptions.merge())
+            .addOnSuccessListener {
+                Log.d(TAG, "DocumentSnapshot successfully updated!")
+                navController.navigate("HomePage")
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error updating document", e)

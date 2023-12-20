@@ -66,6 +66,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import java.util.Date
 import java.util.UUID
 
 class SignUpPage : ComponentActivity() {
@@ -233,7 +234,7 @@ fun SignUp(navController: NavController) {
                         if (validSignUp(email, password)) {
                             signUpWithFirebase(email, password, navController, profilePicture)
                         } else {
-                            errorMessage = "Invalid Details, Try Again"
+                            errorMessage = "Invalid Email and or Password (>5 characters)"
                         }
                     },
                     modifier = Modifier
@@ -321,7 +322,8 @@ fun signUpWithFirebase(email: String, password: String, navController: NavContro
         val profilePictureUrl: String?,
         val phone: String,
         val username: String,
-        val timestamp: Timestamp
+        val timestamp: Timestamp,
+        val dateOfBirth: String
 
     )
 
@@ -346,6 +348,7 @@ fun signUpWithFirebase(email: String, password: String, navController: NavContro
                                         phone = "",
                                         username = "",
                                         timestamp = Timestamp.now(),
+                                        dateOfBirth = ""
                                     )
                                     firestore.collection("users").document(user.uid)
                                         .set(userData)

@@ -140,6 +140,9 @@ fun Home(navController: NavController) {
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = "AccountCircle",
                                 modifier = Modifier.size(50.dp)
+                                    .clickable {
+                                        navController.navigate("AccountDetailsPage")
+                                    }
                             )
                         }
                     } else {
@@ -147,6 +150,9 @@ fun Home(navController: NavController) {
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "AccountCircle",
                             modifier = Modifier.size(50.dp)
+                                .clickable {
+                                    navController.navigate("AccountDetailsPage")
+                                }
                         )
                     }
 

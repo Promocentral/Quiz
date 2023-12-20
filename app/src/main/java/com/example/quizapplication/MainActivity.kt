@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = "SignUpPage"
+                    startDestination = "LoginPage"
                 ) {
                     composable("LoginPage") {
                         Login(navController)
@@ -181,7 +181,7 @@ fun Login(navController: NavController) {
                     if (validLogin(email, password)) {
                         loginWithFirebase(email, password, navController)
                     } else {
-                        errorMessage = "Invalid Details, Try Again"
+                        errorMessage = "Invalid Details"
                     }
                 },
                 modifier = Modifier
